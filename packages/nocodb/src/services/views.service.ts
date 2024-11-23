@@ -279,9 +279,9 @@ export class ViewsService {
     });
 
     if (customUrl?.id) {
-      if (param.sharedView.custom_path) {
+      if (param.sharedView.custom_url_path) {
         await CustomUrl.update(context, view.fk_custom_url_id, {
-          custom_path: param.sharedView.custom_path,
+          custom_path: param.sharedView.custom_url_path,
         });
       } else {
         await CustomUrl.delete(context, { id: view.fk_custom_url_id });
@@ -295,7 +295,7 @@ export class ViewsService {
         view_id: view.id,
         // Todo: add original path
         original_path: '',
-        custom_path: param.sharedView.custom_path,
+        custom_path: param.sharedView.custom_url_path,
       });
     }
 

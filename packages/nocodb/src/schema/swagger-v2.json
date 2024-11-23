@@ -12970,6 +12970,93 @@
           "$ref": "#/components/parameters/xc-token"
         }
       ]
+    },
+    "/api/v2/meta/custom-url/{customPath}": {
+      "get": {
+        "summary": "Get original path from custom url path",
+        "operationId": "get-original-path",
+        "description": "Get original path from custom url path",
+        "tags": [
+          "CustomUrl", "Internal"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {},
+                "examples": {
+                  "Example 1": {
+                    "value": "nc/form/957b3e5b-c7fe-4805-bdb2-e4048e974f62"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
+      },
+      "parameters": [
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "customPath",
+          "in": "path",
+          "required": true,
+          "description": "Custom url path"
+        },
+        {
+          "$ref": "#/components/parameters/xc-token"
+        }
+      ]
+    },
+    "/api/v2/meta/custom-url/check-path": {
+      "get": {
+        "summary": "Check custom url path availability",
+        "operationId": "check-availability",
+        "description": "Check custom url path availability",
+        "tags": [
+          "CustomUrl", "Internal"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "custom_path": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {},
+                "examples": {
+                  "Example 1": {
+                    "value": true
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -19841,7 +19928,8 @@
         "examples": [
           {
             "meta": {},
-            "password": "123456789"
+            "password": "123456789",
+            "custom_url_path": "feedback-form"
           }
         ],
         "title": "Shared View Request Model",
@@ -19854,6 +19942,10 @@
           "password": {
             "$ref": "#/components/schemas/StringOrNull",
             "description": "Password to restrict access"
+          },
+          "custom_url_path": {
+            "$ref": "#/components/schemas/StringOrNull",
+            "description": "Custom url path"
           }
         },
         "x-stoplight": {
@@ -21205,6 +21297,18 @@
               }
             ],
             "description": "Associated View Model"
+          },
+          "owned_by": {
+            "$ref": "#/components/schemas/Id",
+            "description": "ID of view owner user"
+          },
+          "fk_custom_url_id": {
+            "$ref": "#/components/schemas/StringOrNull",
+            "description": "Custom url id of view"
+          },
+          "custom_url_path": {
+            "$ref": "#/components/schemas/StringOrNull",
+            "description": "Custom url path"
           }
         },
         "required": [

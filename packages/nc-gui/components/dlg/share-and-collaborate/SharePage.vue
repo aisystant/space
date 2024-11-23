@@ -108,11 +108,11 @@ const isOpenCustomUrl = computed(() => {
 })
 
 const customUrl = computed({
-  get: () => (isOpenCustomUrl.value ? activeView.value?.custom_path ?? '' : ''),
+  get: () => (isOpenCustomUrl.value ? activeView.value?.custom_url_path ?? '' : ''),
   set: async (value) => {
     if (!activeView.value) return
 
-    activeView.value = { ...(activeView.value as any), custom_path: isOpenCustomUrl.value ? value : null }
+    activeView.value = { ...(activeView.value as any), custom_url_path: isOpenCustomUrl.value ? value : null }
   },
 })
 
@@ -124,9 +124,9 @@ const toggleCustomUrl = async () => {
   isUpdating.value.password = true
   try {
     if (passwordProtected.value) {
-      activeView.value = { ...(activeView.value as any), custom_path: null }
+      activeView.value = { ...(activeView.value as any), custom_url_path: null }
     } else {
-      activeView.value = { ...(activeView.value as any), custom_path: '' }
+      activeView.value = { ...(activeView.value as any), custom_url_path: '' }
     }
 
     await updateSharedView()
@@ -251,6 +251,17 @@ function sharedViewUrl() {
   }`
 }
 
+const dashboardUrl1 = computed(() => {
+  // get base url for workspace
+  const baseUrl = getBaseUrl(workspaceStore.activeWorkspaceId)
+
+  if (baseUrl) {
+    return `${baseUrl}${appInfo.value?.dashboardPath}`
+  }
+
+  return dashboardUrl.value
+})
+
 const toggleViewShare = async () => {
   if (!activeView.value?.id) return
 
@@ -317,7 +328,7 @@ async function updateSharedView() {
     await $api.dbViewShare.update(activeView.value.id!, {
       meta,
       password: activeView.value.password,
-      ...(activeView.value?.custom_path ? { custom_path: activeView.value?.custom_path } : {}),
+      custom_url_path: activeView.value?.custom_url_path ?? null,
     })
   } catch (e: any) {
     message.error(await extractSdkResponseErrorMsg(e))
@@ -337,8 +348,6 @@ const updateSharedViewWithDebounce = useDebounceFn(
 async function savePreFilledMode() {
   await updateSharedView()
 }
-
-watchEffect(() => {})
 </script>
 
 <template>
@@ -374,15 +383,26 @@ watchEffect(() => {})
             />
           </div>
           <Transition mode="out-in" name="layout">
-            <div v-if="isOpenCustomUrl" class="flex gap-2 mt-2 w-2/3">
+            <div
+              v-if="isOpenCustomUrl"
+              class="flex items-center mt-2 pl-2 pr-1 w-full border-1 rounded-lg focus-within:(border-1 border-nc-border-brand shadow-selected)"
+            >
+              <div class="text-nc-content-gray-muted">{{ dashboardUrl1 }}#/shared/</div>
               <a-input
                 v-model:value="customUrl"
                 placeholder="Enter custom url"
-                class="!rounded-lg !py-1 !bg-white"
+                class="!rounded-lg !py-1 h-8"
                 data-testid="nc-modal-share-view__custom-url"
                 size="small"
+                :bordered="false"
+                autocomplete="off"
                 @update:value="updateSharedViewWithDebounce"
               />
+              <div>
+                <NcButton size="xs" @click.stop="updateSharedView">
+                  {{ $t('general.save') }}
+                </NcButton>
+              </div>
             </div>
           </Transition>
         </div>

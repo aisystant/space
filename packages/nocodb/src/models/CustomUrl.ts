@@ -39,7 +39,7 @@ export default class CustomUrl {
     return customUrl && new CustomUrl(customUrl);
   }
 
-  public static async getByCustomPath(
+  public static async getOriginUrlByCustomPath(
     _context: NcContext,
     customPath: string,
     ncMeta = Noco.ncMeta,
@@ -63,6 +63,8 @@ export default class CustomUrl {
         NocoCache.set(`${CacheScope.CUSTOM_URLS}:${customPath}`, customUrl);
       }
     }
+
+    console.log('custom url', customUrl);
 
     return customUrl && new CustomUrl(customUrl);
   }
@@ -132,6 +134,34 @@ export default class CustomUrl {
       updateData,
       id,
     );
+  }
+
+  public static async checkAvailability(
+    _context: NcContext,
+    params: Pick<CustomUrl, 'id' | 'custom_path'>,
+    ncMeta = Noco.ncMeta,
+  ) {
+    const condition = extractProps(params, ['custom_path']);
+
+    const customUrlList = await ncMeta.metaList2(
+      RootScopes.ROOT,
+      RootScopes.ROOT,
+      MetaTable.CUSTOM_URLS,
+      {
+        condition,
+        xcCondition: params.id
+          ? {
+              _not: {
+                id: {
+                  neq: params.id,
+                },
+              },
+            }
+          : null,
+      },
+    );
+
+    return !!customUrlList.length;
   }
 
   static async delete(

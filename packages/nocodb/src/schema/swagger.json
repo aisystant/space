@@ -24958,7 +24958,7 @@
           {
             "meta": {},
             "password": "123456789",
-            "custom_path": "feedback-form"
+            "custom_url_path": "feedback-form"
           }
         ],
         "title": "Shared View Request Model",
@@ -24972,9 +24972,9 @@
             "$ref": "#/components/schemas/StringOrNull",
             "description": "Password to restrict access"
           },
-          "custom_path": {
+          "custom_url_path": {
             "$ref": "#/components/schemas/StringOrNull",
-            "description": "Custom url"
+            "description": "Custom url path"
           }
         },
         "x-stoplight": {
@@ -26360,6 +26360,14 @@
           "owned_by": {
             "$ref": "#/components/schemas/Id",
             "description": "ID of view owner user"
+          },
+          "fk_custom_url_id": {
+            "$ref": "#/components/schemas/StringOrNull",
+            "description": "Custom url id of view"
+          },
+          "custom_url_path": {
+            "$ref": "#/components/schemas/StringOrNull",
+            "description": "Custom url path"
           }
         },
         "required": ["fk_model_id", "show", "title", "type"],
