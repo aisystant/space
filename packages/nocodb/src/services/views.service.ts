@@ -294,7 +294,7 @@ export class ViewsService {
             : {}),
         });
       } else {
-        await CustomUrl.delete({ id: view.fk_custom_url_id });
+        await CustomUrl.delete({ id: view.fk_custom_url_id as string });
         customUrl = undefined;
       }
     } else {

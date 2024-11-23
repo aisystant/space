@@ -1419,7 +1419,7 @@ export default class View implements ViewType {
     await View.clearSingleQueryCache(context, view.fk_model_id, [view], ncMeta);
 
     if (view.fk_custom_url_id) {
-      CustomUrl.delete({ id: view.fk_custom_url_id }).catch(() => {
+      CustomUrl.delete({ id: view.fk_custom_url_id as string }).catch(() => {
         logger.error(`Failed to delete custom urls of viewId: ${view.id}`);
       });
     }

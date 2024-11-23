@@ -15,7 +15,7 @@ export default class CustomUrl implements CustomUrlType {
   }
 
   public static async get(
-    _params: Pick<CustomUrl, 'id' | 'view_id' | 'custom_path'>,
+    _params: Partial<Pick<CustomUrl, 'id' | 'view_id' | 'custom_path'>>,
     _ncMeta = Noco.ncMeta,
   ) {
     return {} as CustomUrl;
@@ -36,7 +36,9 @@ export default class CustomUrl implements CustomUrlType {
   }
 
   public static async list(
-    _params: Pick<CustomUrl, 'fk_workspace_id' | 'base_id' | 'fk_model_id'>,
+    _params: Partial<
+      Pick<CustomUrl, 'fk_workspace_id' | 'base_id' | 'fk_model_id'>
+    >,
     _ncMeta = Noco.ncMeta,
   ) {
     return [] as CustomUrl[];
@@ -51,19 +53,21 @@ export default class CustomUrl implements CustomUrlType {
   }
 
   public static async checkAvailability(
-    _params: Pick<CustomUrl, 'id' | 'custom_path'>,
+    _params: Partial<Pick<CustomUrl, 'id' | 'custom_path'>>,
     _ncMeta = Noco.ncMeta,
   ) {
     return false;
   }
 
   static async delete(
-    _customUrl: Pick<CustomUrl, 'id' | 'view_id'>,
+    _customUrl: Partial<Pick<CustomUrl, 'id' | 'view_id'>>,
     _ncMeta = Noco.ncMeta,
   ): Promise<any> {}
 
   static async bulkDelete(
-    _params: Pick<CustomUrl, 'fk_workspace_id' | 'base_id' | 'fk_model_id'>,
+    _params: Partial<
+      Pick<CustomUrl, 'fk_workspace_id' | 'base_id' | 'fk_model_id'>
+    >,
     _ncMeta = Noco.ncMeta,
   ): Promise<any> {}
 }
