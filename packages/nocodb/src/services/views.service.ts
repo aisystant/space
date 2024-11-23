@@ -278,34 +278,38 @@ export class ViewsService {
       NcError.viewNotFound(param.viewId);
     }
 
-    let customUrl: CustomUrl | undefined = await CustomUrl.get({
-      view_id: view.id,
-      id: view.fk_custom_url_id,
-    });
+    let customUrl: CustomUrl | undefined;
 
-    if (customUrl?.id) {
-      if (param.sharedView.custom_url_path) {
-        await CustomUrl.update(view.fk_custom_url_id, {
-          custom_path: param.sharedView.custom_url_path,
-          ...(customUrl.original_path !== param.sharedView.original_url
-            ? {
-                original_path: param.sharedView.original_url,
-              }
-            : {}),
-        });
-      } else {
-        await CustomUrl.delete({ id: view.fk_custom_url_id as string });
-        customUrl = undefined;
-      }
-    } else {
-      customUrl = await CustomUrl.insert({
-        fk_workspace_id: view.fk_workspace_id,
-        base_id: view.base_id,
-        fk_model_id: view.fk_model_id,
+    if (param.sharedView.custom_url_path !== undefined) {
+      customUrl = await CustomUrl.get({
         view_id: view.id,
-        original_path: param.sharedView.original_url,
-        custom_path: param.sharedView.custom_url_path,
+        id: view.fk_custom_url_id,
       });
+
+      if (customUrl?.id) {
+        if (param.sharedView.custom_url_path) {
+          await CustomUrl.update(view.fk_custom_url_id, {
+            custom_path: param.sharedView.custom_url_path,
+            ...(customUrl.original_path !== param.sharedView.original_url
+              ? {
+                  original_path: param.sharedView.original_url,
+                }
+              : {}),
+          });
+        } else {
+          await CustomUrl.delete({ id: view.fk_custom_url_id as string });
+          customUrl = undefined;
+        }
+      } else if (param.sharedView.custom_url_path) {
+        customUrl = await CustomUrl.insert({
+          fk_workspace_id: view.fk_workspace_id,
+          base_id: view.base_id,
+          fk_model_id: view.fk_model_id,
+          view_id: view.id,
+          original_path: param.sharedView.original_url,
+          custom_path: param.sharedView.custom_url_path,
+        });
+      }
     }
 
     const result = await View.update(context, param.viewId, {
