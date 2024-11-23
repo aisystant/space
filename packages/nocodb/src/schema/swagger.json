@@ -24957,7 +24957,8 @@
         "examples": [
           {
             "meta": {},
-            "password": "123456789"
+            "password": "123456789",
+            "custom_path": "feedback-form"
           }
         ],
         "title": "Shared View Request Model",
@@ -24970,6 +24971,10 @@
           "password": {
             "$ref": "#/components/schemas/StringOrNull",
             "description": "Password to restrict access"
+          },
+          "custom_path": {
+            "$ref": "#/components/schemas/StringOrNull",
+            "description": "Custom url"
           }
         },
         "x-stoplight": {

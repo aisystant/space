@@ -10,6 +10,7 @@ import { AppHooksService } from '~/services/app-hooks/app-hooks.service';
 import { validatePayload } from '~/helpers';
 import { NcError } from '~/helpers/catchError';
 import { BaseUser, Model, ModelRoleVisibility, View } from '~/models';
+import CustomUrl from 'src/models/CustomUrl';
 
 // todo: move
 async function xcVisibilityMetaGet(
@@ -272,7 +273,36 @@ export class ViewsService {
       NcError.viewNotFound(param.viewId);
     }
 
-    const result = await View.update(context, param.viewId, param.sharedView);
+    let customUrl: CustomUrl | undefined = await CustomUrl.get(context, {
+      view_id: view.id,
+      id: view.fk_custom_url_id,
+    });
+
+    if (customUrl?.id) {
+      if (param.sharedView.custom_path) {
+        await CustomUrl.update(context, view.fk_custom_url_id, {
+          custom_path: param.sharedView.custom_path,
+        });
+      } else {
+        await CustomUrl.delete(context, { id: view.fk_custom_url_id });
+        customUrl = undefined;
+      }
+    } else {
+      customUrl = await CustomUrl.insert(context, {
+        fk_workspace_id: view.fk_workspace_id,
+        base_id: view.base_id,
+        fk_model_id: view.fk_model_id,
+        view_id: view.id,
+        // Todo: add original path
+        original_path: '',
+        custom_path: param.sharedView.custom_path,
+      });
+    }
+
+    const result = await View.update(context, param.viewId, {
+      ...param.sharedView,
+      fk_custom_url_id: customUrl?.id ?? null,
+    });
 
     this.appHooksService.emit(AppEvents.SHARED_VIEW_UPDATE, {
       user: param.user,
@@ -296,6 +326,7 @@ export class ViewsService {
     if (!view) {
       NcError.viewNotFound(param.viewId);
     }
+
     await View.sharedViewDelete(context, param.viewId);
 
     this.appHooksService.emit(AppEvents.SHARED_VIEW_DELETE, {

@@ -7,6 +7,7 @@ import {
   RootScopes,
 } from '~/utils/globals';
 import NocoCache from '~/cache/NocoCache';
+import { NcContext } from 'src/interface/config';
 
 export default class CustomUrl {
   id?: string;
@@ -22,24 +23,24 @@ export default class CustomUrl {
   }
 
   public static async get(
-    params: {
-      id?: string;
-      view_id?: string;
-      custom_path?: string;
-    },
+    _context: NcContext,
+    params: Pick<CustomUrl, 'id' | 'view_id' | 'custom_path'>,
     ncMeta = Noco.ncMeta,
   ) {
     const condition = extractProps(params, ['id', 'view_id', 'custom_path']);
 
-    return await ncMeta.metaGet2(
+    const customUrl = await ncMeta.metaGet2(
       RootScopes.ROOT,
       RootScopes.ROOT,
       MetaTable.CUSTOM_URLS,
       condition,
     );
+
+    return customUrl && new CustomUrl(customUrl);
   }
 
   public static async getByCustomPath(
+    _context: NcContext,
     customPath: string,
     ncMeta = Noco.ncMeta,
   ) {
@@ -67,6 +68,7 @@ export default class CustomUrl {
   }
 
   public static async insert(
+    _context: NcContext,
     customUrl: Partial<CustomUrl>,
     ncMeta = Noco.ncMeta,
   ) {
@@ -79,20 +81,19 @@ export default class CustomUrl {
       'custom_path',
     ]);
 
-    return await ncMeta.metaInsert2(
+    const insertedCustomUrl = await ncMeta.metaInsert2(
       RootScopes.ROOT,
       RootScopes.ROOT,
       MetaTable.CUSTOM_URLS,
       insertData,
     );
+
+    return insertedCustomUrl && new CustomUrl(insertedCustomUrl);
   }
 
   public static async list(
-    params: {
-      fk_workspace_id?: string;
-      base_id?: string;
-      fk_model_id?: string;
-    },
+    _context: NcContext,
+    params: Pick<CustomUrl, 'fk_workspace_id' | 'base_id' | 'fk_model_id'>,
     ncMeta = Noco.ncMeta,
   ) {
     const condition = extractProps(params, [
@@ -110,10 +111,11 @@ export default class CustomUrl {
       },
     );
 
-    return customUrlList;
+    return customUrlList.map((customUrl) => new CustomUrl(customUrl));
   }
 
   public static async update(
+    _context: NcContext,
     id: string,
     customUrl: Partial<CustomUrl>,
     ncMeta = Noco.ncMeta,
@@ -130,5 +132,22 @@ export default class CustomUrl {
       updateData,
       id,
     );
+  }
+
+  static async delete(
+    _context: NcContext,
+    customUrl: Pick<CustomUrl, 'id' | 'view_id'>,
+    ncMeta = Noco.ncMeta,
+  ) {
+    const condition = extractProps(customUrl, ['id', 'view_id']);
+
+    const res = await ncMeta.metaDelete(
+      RootScopes.ROOT,
+      RootScopes.ROOT,
+      MetaTable.CUSTOM_URLS,
+      condition,
+    );
+
+    return res;
   }
 }

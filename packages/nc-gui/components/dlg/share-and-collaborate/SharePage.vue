@@ -20,6 +20,7 @@ const isUpdating = ref({
   public: false,
   password: false,
   download: false,
+  customUrl: false,
 })
 
 const activeView = computed<(ViewType & { meta: object & Record<string, any> }) | undefined>({
@@ -92,6 +93,40 @@ const togglePasswordProtected = async () => {
       activeView.value = { ...(activeView.value as any), password: null }
     } else {
       activeView.value = { ...(activeView.value as any), password: '' }
+    }
+
+    await updateSharedView()
+  } finally {
+    isUpdating.value.password = false
+  }
+}
+
+const isOpenCustomUrlLocal = ref(false)
+
+const isOpenCustomUrl = computed(() => {
+  return !!activeView.value?.password || isOpenCustomUrlLocal.value
+})
+
+const customUrl = computed({
+  get: () => (isOpenCustomUrl.value ? activeView.value?.custom_path ?? '' : ''),
+  set: async (value) => {
+    if (!activeView.value) return
+
+    activeView.value = { ...(activeView.value as any), custom_path: isOpenCustomUrl.value ? value : null }
+  },
+})
+
+const toggleCustomUrl = async () => {
+  isOpenCustomUrlLocal.value = !isOpenCustomUrl.value
+  if (!activeView.value) return
+  if (isUpdating.value.customUrl) return
+
+  isUpdating.value.password = true
+  try {
+    if (passwordProtected.value) {
+      activeView.value = { ...(activeView.value as any), custom_path: null }
+    } else {
+      activeView.value = { ...(activeView.value as any), custom_path: '' }
     }
 
     await updateSharedView()
@@ -282,6 +317,7 @@ async function updateSharedView() {
     await $api.dbViewShare.update(activeView.value.id!, {
       meta,
       password: activeView.value.password,
+      ...(activeView.value?.custom_path ? { custom_path: activeView.value?.custom_path } : {}),
     })
   } catch (e: any) {
     message.error(await extractSdkResponseErrorMsg(e))
@@ -289,6 +325,14 @@ async function updateSharedView() {
 
   return true
 }
+
+const updateSharedViewWithDebounce = useDebounceFn(
+  async () => {
+    await updateSharedView()
+  },
+  250,
+  { maxWait: 2000 },
+)
 
 async function savePreFilledMode() {
   await updateSharedView()
@@ -315,6 +359,32 @@ watchEffect(() => {})
       <template v-if="isPublicShared">
         <div class="mt-0.5 border-t-1 border-gray-100 pt-3">
           <GeneralCopyUrl v-model:url="url" />
+        </div>
+        <div class="flex flex-col justify-between mt-1 py-2 px-3 bg-gray-50 rounded-md">
+          <div class="flex flex-row items-center justify-between">
+            <div class="flex text-black">Custom url</div>
+            <a-switch
+              v-e="['c:share:view:custom-url:toggle']"
+              :checked="isOpenCustomUrl"
+              :loading="isUpdating.customUrl"
+              class="share-custom-url-toggle !mt-0.25"
+              data-testid="share-custom-url-toggle"
+              size="small"
+              @click="toggleCustomUrl"
+            />
+          </div>
+          <Transition mode="out-in" name="layout">
+            <div v-if="isOpenCustomUrl" class="flex gap-2 mt-2 w-2/3">
+              <a-input
+                v-model:value="customUrl"
+                placeholder="Enter custom url"
+                class="!rounded-lg !py-1 !bg-white"
+                data-testid="nc-modal-share-view__custom-url"
+                size="small"
+                @update:value="updateSharedViewWithDebounce"
+              />
+            </div>
+          </Transition>
         </div>
         <div class="flex flex-col justify-between mt-1 py-2 px-3 bg-gray-50 rounded-md">
           <div class="flex flex-row items-center justify-between">
