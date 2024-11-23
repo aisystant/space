@@ -21218,10 +21218,6 @@
           "fk_custom_url_id": {
             "$ref": "#/components/schemas/StringOrNull",
             "description": "Custom url id of view"
-          },
-          "custom_url_path": {
-            "$ref": "#/components/schemas/StringOrNull",
-            "description": "Custom url path"
           }
         },
         "required": [
