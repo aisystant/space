@@ -646,7 +646,8 @@
     "thisFormIsLocked": "This Form is currently locked",
     "unlockThisVieToMakeChanges": "Unlock this view to make changes",
     "yourBaseRole": "Your base role",
-    "lockedByUser": "Locked by {user}"
+    "lockedByUser": "Locked by {user}",
+    "thisPageNoLongerExists": "This page no longer exists"
   },
   "labels": {
     "continue": "Continue",
