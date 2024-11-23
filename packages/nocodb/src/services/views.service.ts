@@ -10,7 +10,7 @@ import { AppHooksService } from '~/services/app-hooks/app-hooks.service';
 import { validatePayload } from '~/helpers';
 import { NcError } from '~/helpers/catchError';
 import { BaseUser, Model, ModelRoleVisibility, View } from '~/models';
-import CustomUrl from 'src/models/CustomUrl';
+import CustomUrl from '~/models/CustomUrl';
 
 // todo: move
 async function xcVisibilityMetaGet(

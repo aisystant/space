@@ -41,7 +41,7 @@ import {
 } from '~/utils/modelUtils';
 import { LinkToAnotherRecordColumn } from '~/models';
 import { cleanCommandPaletteCache } from '~/helpers/commandPaletteHelpers';
-import CustomUrl from './CustomUrl';
+import CustomUrl from '~/models/CustomUrl';
 
 const { v4: uuidv4 } = require('uuid');
 
