@@ -54,6 +54,10 @@ const url = computed(() => {
   return sharedViewUrl() ?? ''
 })
 
+const preFillFormSearchParams = computed(() => {
+  return viewStore.preFillFormSearchParams && formPreFill.value.preFillEnabled ? viewStore.preFillFormSearchParams : ''
+})
+
 const passwordProtectedLocal = ref(false)
 
 const passwordProtected = computed(() => {
@@ -134,7 +138,11 @@ const dashboardUrl1 = computed(() => {
 })
 
 const copyCustomUrl = () => {
-  copy(`${dashboardUrl1.value}}#/shared/${customUrl.value}`)
+  copy(
+    `${dashboardUrl1.value}#/p/${customUrl.value}${
+      preFillFormSearchParams.value && activeView.value?.type === ViewTypes.FORM ? `?${preFillFormSearchParams.value}` : ''
+    }`,
+  )
 }
 
 onMounted(() => {
@@ -242,7 +250,7 @@ const handleChangeFormPreFill = (value: { preFillEnabled?: boolean; preFilledMod
   }
 }
 
-function sharedViewUrl() {
+function sharedViewUrl(withPrefill = true) {
   if (!activeView.value) return
 
   let viewType
@@ -275,7 +283,7 @@ function sharedViewUrl() {
   }
 
   return `${encodeURI(`${dashboardUrl1}#/nc/${viewType}/${activeView.value.uuid}${surveyMode.value ? '/survey' : ''}`)}${
-    viewStore.preFillFormSearchParams && formPreFill.value.preFillEnabled ? `?${viewStore.preFillFormSearchParams}` : ''
+    withPrefill && preFillFormSearchParams.value ? `?${preFillFormSearchParams.value}` : ''
   }`
 }
 
@@ -346,6 +354,7 @@ async function updateSharedView() {
       meta,
       password: activeView.value.password,
       custom_url_path: customUrl.value ?? null,
+      original_url: sharedViewUrl(false),
     })
     activeView.value.custom_url_path = customUrl.value ?? null
   } catch (e: any) {
@@ -405,7 +414,7 @@ async function savePreFilledMode() {
               v-if="isOpenCustomUrl"
               class="flex items-center mt-2 pl-2 pr-1 w-full border-1 rounded-lg focus-within:(border-1 border-nc-border-brand shadow-selected)"
             >
-              <div class="text-nc-content-gray-muted">{{ dashboardUrl1 }}#/shared/</div>
+              <div class="text-nc-content-gray-muted">{{ dashboardUrl1 }}#/p/</div>
               <a-input
                 ref="customUrlInputRef"
                 v-model:value="customUrl"

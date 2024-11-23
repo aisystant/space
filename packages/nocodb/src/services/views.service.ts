@@ -282,6 +282,11 @@ export class ViewsService {
       if (param.sharedView.custom_url_path) {
         await CustomUrl.update(view.fk_custom_url_id, {
           custom_path: param.sharedView.custom_url_path,
+          ...(customUrl.original_path !== param.sharedView.original_url
+            ? {
+                original_path: param.sharedView.original_url,
+              }
+            : {}),
         });
       } else {
         await CustomUrl.delete({ id: view.fk_custom_url_id });
@@ -293,8 +298,7 @@ export class ViewsService {
         base_id: view.base_id,
         fk_model_id: view.fk_model_id,
         view_id: view.id,
-        // Todo: add original path
-        original_path: '',
+        original_path: param.sharedView.original_url,
         custom_path: param.sharedView.custom_url_path,
       });
     }

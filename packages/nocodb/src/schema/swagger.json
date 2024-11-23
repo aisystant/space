@@ -24972,6 +24972,10 @@
             "$ref": "#/components/schemas/StringOrNull",
             "description": "Password to restrict access"
           },
+          "original_url": {
+            "$ref": "#/components/schemas/StringOrNull",
+           "description": "Original url user to redirect from custom url path"
+          },
           "custom_url_path": {
             "$ref": "#/components/schemas/StringOrNull",
             "description": "Custom url path"
