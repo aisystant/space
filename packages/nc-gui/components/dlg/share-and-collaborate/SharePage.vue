@@ -16,6 +16,8 @@ const workspaceStore = useWorkspace()
 
 const isLocked = inject(IsLockedInj, ref(false))
 
+const { copy } = useCopy()
+
 const isUpdating = ref({
   public: false,
   password: false,
@@ -104,16 +106,37 @@ const togglePasswordProtected = async () => {
 const isOpenCustomUrlLocal = ref(false)
 
 const isOpenCustomUrl = computed(() => {
-  return !!activeView.value?.password || isOpenCustomUrlLocal.value
+  return !!activeView.value?.custom_url_path || isOpenCustomUrlLocal.value
 })
 
-const customUrl = computed({
-  get: () => (isOpenCustomUrl.value ? activeView.value?.custom_url_path ?? '' : ''),
-  set: async (value) => {
-    if (!activeView.value) return
+const customUrl = ref()
 
-    activeView.value = { ...(activeView.value as any), custom_url_path: isOpenCustomUrl.value ? value : null }
-  },
+// const customUrl = computed({
+//   get: () => (isOpenCustomUrl.value ? activeView.value?.custom_url_path ?? '' : ''),
+//   set: async (value) => {
+//     if (!activeView.value) return
+
+//     activeView.value = { ...(activeView.value as any), custom_url_path: isOpenCustomUrl.value ? value : null }
+//   },
+// })
+
+const dashboardUrl1 = computed(() => {
+  // get base url for workspace
+  const baseUrl = getBaseUrl(workspaceStore.activeWorkspaceId)
+
+  if (baseUrl) {
+    return `${baseUrl}${appInfo.value?.dashboardPath}`
+  }
+
+  return dashboardUrl.value
+})
+
+const copyCustomUrl = () => {
+  copy(`${dashboardUrl1.value}}#/shared/${customUrl.value}`)
+}
+
+onMounted(() => {
+  customUrl.value = activeView.value?.custom_url_path
 })
 
 const toggleCustomUrl = async () => {
@@ -121,17 +144,17 @@ const toggleCustomUrl = async () => {
   if (!activeView.value) return
   if (isUpdating.value.customUrl) return
 
-  isUpdating.value.password = true
+  isUpdating.value.customUrl = true
   try {
-    if (passwordProtected.value) {
-      activeView.value = { ...(activeView.value as any), custom_url_path: null }
+    if (isOpenCustomUrl.value) {
+      customUrl.value = null
     } else {
-      activeView.value = { ...(activeView.value as any), custom_url_path: '' }
+      customUrl.value = null
     }
 
     await updateSharedView()
   } finally {
-    isUpdating.value.password = false
+    isUpdating.value.customUrl = false
   }
 }
 
@@ -251,17 +274,6 @@ function sharedViewUrl() {
   }`
 }
 
-const dashboardUrl1 = computed(() => {
-  // get base url for workspace
-  const baseUrl = getBaseUrl(workspaceStore.activeWorkspaceId)
-
-  if (baseUrl) {
-    return `${baseUrl}${appInfo.value?.dashboardPath}`
-  }
-
-  return dashboardUrl.value
-})
-
 const toggleViewShare = async () => {
   if (!activeView.value?.id) return
 
@@ -328,8 +340,9 @@ async function updateSharedView() {
     await $api.dbViewShare.update(activeView.value.id!, {
       meta,
       password: activeView.value.password,
-      custom_url_path: activeView.value?.custom_url_path ?? null,
+      custom_url_path: customUrl.value ?? null,
     })
+    activeView.value.custom_url_path = customUrl.value ?? null
   } catch (e: any) {
     message.error(await extractSdkResponseErrorMsg(e))
   }
@@ -396,10 +409,20 @@ async function savePreFilledMode() {
                 size="small"
                 :bordered="false"
                 autocomplete="off"
-                @update:value="updateSharedViewWithDebounce"
               />
               <div>
-                <NcButton size="xs" @click.stop="updateSharedView">
+                <NcButton
+                  v-if="customUrl && customUrl === activeView?.custom_url_path"
+                  size="xs"
+                  type="secondary"
+                  @click="copyCustomUrl"
+                >
+                  <template #icon>
+                    <MdiContentCopy class="h-3.5" />
+                  </template>
+                  {{ $t('general.copy') }}
+                </NcButton>
+                <NcButton v-else size="xs" :disabled="!customUrl" @click.stop="updateSharedView">
                   {{ $t('general.save') }}
                 </NcButton>
               </div>

@@ -273,22 +273,22 @@ export class ViewsService {
       NcError.viewNotFound(param.viewId);
     }
 
-    let customUrl: CustomUrl | undefined = await CustomUrl.get(context, {
+    let customUrl: CustomUrl | undefined = await CustomUrl.get({
       view_id: view.id,
       id: view.fk_custom_url_id,
     });
 
     if (customUrl?.id) {
       if (param.sharedView.custom_url_path) {
-        await CustomUrl.update(context, view.fk_custom_url_id, {
+        await CustomUrl.update(view.fk_custom_url_id, {
           custom_path: param.sharedView.custom_url_path,
         });
       } else {
-        await CustomUrl.delete(context, { id: view.fk_custom_url_id });
+        await CustomUrl.delete({ id: view.fk_custom_url_id });
         customUrl = undefined;
       }
     } else {
-      customUrl = await CustomUrl.insert(context, {
+      customUrl = await CustomUrl.insert({
         fk_workspace_id: view.fk_workspace_id,
         base_id: view.base_id,
         fk_model_id: view.fk_model_id,

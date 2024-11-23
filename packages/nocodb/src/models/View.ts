@@ -131,7 +131,7 @@ export default class View implements ViewType {
         view.meta = parseMetaProp(view);
 
         if (view.fk_custom_url_id) {
-          const customUrl = await CustomUrl.get(context, {
+          const customUrl = await CustomUrl.get({
             id: view.fk_custom_url_id,
           });
 
@@ -181,7 +181,7 @@ export default class View implements ViewType {
 
       if (view) {
         if (view.fk_custom_url_id) {
-          const customUrl = await CustomUrl.get(context, {
+          const customUrl = await CustomUrl.get({
             id: view.fk_custom_url_id,
           });
 
@@ -229,7 +229,7 @@ export default class View implements ViewType {
       if (view) {
         view.meta = parseMetaProp(view);
         if (view.fk_custom_url_id) {
-          const customUrl = await CustomUrl.get(context, {
+          const customUrl = await CustomUrl.get({
             id: view.fk_custom_url_id,
           });
 
@@ -268,7 +268,7 @@ export default class View implements ViewType {
         view.meta = parseMetaProp(view);
 
         if (view.fk_custom_url_id) {
-          const customUrl = await CustomUrl.get(context, {
+          const customUrl = await CustomUrl.get({
             id: view.fk_custom_url_id,
           });
 
@@ -1283,7 +1283,7 @@ export default class View implements ViewType {
       viewId,
     );
 
-    await CustomUrl.delete(context, { view_id: viewId });
+    await CustomUrl.delete({ view_id: viewId });
 
     await NocoCache.update(`${CacheScope.VIEW}:${viewId}`, {
       uuid: null,
@@ -1448,7 +1448,7 @@ export default class View implements ViewType {
     }
 
     if (view.fk_custom_url_id) {
-      await CustomUrl.delete(context, { id: view.fk_custom_url_id });
+      await CustomUrl.delete({ id: view.fk_custom_url_id });
     }
 
     // on update, delete any optimised single query cache

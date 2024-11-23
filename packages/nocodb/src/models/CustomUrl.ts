@@ -7,7 +7,7 @@ import {
   RootScopes,
 } from '~/utils/globals';
 import NocoCache from '~/cache/NocoCache';
-import { NcContext } from 'src/interface/config';
+import { NcError } from 'src/helpers/catchError';
 
 export default class CustomUrl {
   id?: string;
@@ -23,7 +23,6 @@ export default class CustomUrl {
   }
 
   public static async get(
-    _context: NcContext,
     params: Pick<CustomUrl, 'id' | 'view_id' | 'custom_path'>,
     ncMeta = Noco.ncMeta,
   ) {
@@ -40,7 +39,6 @@ export default class CustomUrl {
   }
 
   public static async getOriginUrlByCustomPath(
-    _context: NcContext,
     customPath: string,
     ncMeta = Noco.ncMeta,
   ) {
@@ -64,13 +62,14 @@ export default class CustomUrl {
       }
     }
 
-    console.log('custom url', customUrl);
+    if (!customUrl) {
+      NcError.notFound();
+    }
 
-    return customUrl && new CustomUrl(customUrl);
+    return customUrl?.original_path;
   }
 
   public static async insert(
-    _context: NcContext,
     customUrl: Partial<CustomUrl>,
     ncMeta = Noco.ncMeta,
   ) {
@@ -94,7 +93,6 @@ export default class CustomUrl {
   }
 
   public static async list(
-    _context: NcContext,
     params: Pick<CustomUrl, 'fk_workspace_id' | 'base_id' | 'fk_model_id'>,
     ncMeta = Noco.ncMeta,
   ) {
@@ -117,7 +115,6 @@ export default class CustomUrl {
   }
 
   public static async update(
-    _context: NcContext,
     id: string,
     customUrl: Partial<CustomUrl>,
     ncMeta = Noco.ncMeta,
@@ -137,7 +134,6 @@ export default class CustomUrl {
   }
 
   public static async checkAvailability(
-    _context: NcContext,
     params: Pick<CustomUrl, 'id' | 'custom_path'>,
     ncMeta = Noco.ncMeta,
   ) {
@@ -165,7 +161,6 @@ export default class CustomUrl {
   }
 
   static async delete(
-    _context: NcContext,
     customUrl: Pick<CustomUrl, 'id' | 'view_id'>,
     ncMeta = Noco.ncMeta,
   ) {
