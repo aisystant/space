@@ -2,13 +2,13 @@ import type { CustomUrlType } from 'nocodb-sdk';
 import Noco from '~/Noco';
 
 export default class CustomUrl implements CustomUrlType {
-  id?: string;
-  fk_workspace_id?: string;
-  base_id?: string;
-  fk_model_id?: string;
-  view_id?: string;
-  original_path?: string;
-  custom_path?: string;
+  public id?: string;
+  public fk_workspace_id?: string;
+  public base_id?: string;
+  public fk_model_id?: string;
+  public view_id?: string;
+  public original_path?: string;
+  public custom_path?: string;
 
   constructor(customUrl: Partial<CustomUrl>) {
     Object.assign(this, customUrl);
