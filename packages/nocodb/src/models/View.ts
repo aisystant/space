@@ -130,14 +130,6 @@ export default class View implements ViewType {
       if (view) {
         view.meta = parseMetaProp(view);
 
-        if (view.fk_custom_url_id) {
-          const customUrl = await CustomUrl.get({
-            id: view.fk_custom_url_id,
-          });
-
-          view.custom_url_path = customUrl.custom_path || null;
-        }
-
         await NocoCache.set(`${CacheScope.VIEW}:${view.id}`, view);
       }
     }
@@ -180,14 +172,6 @@ export default class View implements ViewType {
       );
 
       if (view) {
-        if (view.fk_custom_url_id) {
-          const customUrl = await CustomUrl.get({
-            id: view.fk_custom_url_id,
-          });
-
-          view.custom_url_path = customUrl.custom_path || null;
-        }
-
         await NocoCache.set(
           `${CacheScope.VIEW}:${fk_model_id}:${view.id}`,
           view,
@@ -228,13 +212,6 @@ export default class View implements ViewType {
       );
       if (view) {
         view.meta = parseMetaProp(view);
-        if (view.fk_custom_url_id) {
-          const customUrl = await CustomUrl.get({
-            id: view.fk_custom_url_id,
-          });
-
-          view.custom_url_path = customUrl.custom_path || null;
-        }
 
         await NocoCache.set(`${CacheScope.VIEW}:${fk_model_id}:default`, view);
       }
@@ -266,14 +243,6 @@ export default class View implements ViewType {
       );
       for (const view of viewsList) {
         view.meta = parseMetaProp(view);
-
-        if (view.fk_custom_url_id) {
-          const customUrl = await CustomUrl.get({
-            id: view.fk_custom_url_id,
-          });
-
-          view.custom_url_path = customUrl.custom_path || null;
-        }
       }
       await NocoCache.setList(CacheScope.VIEW, [modelId], viewsList);
     }

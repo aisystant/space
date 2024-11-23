@@ -1,6 +1,7 @@
+import { CustomUrlType } from 'nocodb-sdk';
 import Noco from '~/Noco';
 
-export default class CustomUrl {
+export default class CustomUrl implements CustomUrlType {
   id?: string;
   fk_workspace_id?: string;
   base_id?: string;

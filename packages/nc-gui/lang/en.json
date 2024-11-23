@@ -630,6 +630,7 @@
     "categories": "Categories",
     "fieldInaccessible": "Field inaccessible",
     "noConditionsAdded": "No conditions added",
+    "thisCustomUrlIsAlreadyUsed": "This custom URL is already in use.",
     "noAiIntegrationAvailable": "No AI Integrations available.",
     "nocoAiBaseBuilder": "Noco AI Base Builder",
     "additionalDetails": "Additional Details",

@@ -281,7 +281,7 @@ async function saveTheme() {
   $e(`a:view:share:${viewTheme.value ? 'enable' : 'disable'}-theme`)
 }
 
-async function updateSharedView() {
+async function updateSharedView(custUrl = undefined) {
   try {
     if (!activeView.value?.meta) return
     const meta = activeView.value.meta
@@ -289,10 +289,13 @@ async function updateSharedView() {
     await $api.dbViewShare.update(activeView.value.id!, {
       meta,
       password: activeView.value.password,
-      custom_url_path: customUrl.value ?? null,
+      ...(custUrl !== undefined ? { custom_url_path: custUrl ?? null } : {}),
       original_url: sharedViewUrl(false),
     })
-    activeView.value.custom_url_path = customUrl.value ?? null
+
+    if (custUrl !== undefined) {
+      activeView.value.custom_url_path = custUrl ?? null
+    }
   } catch (e: any) {
     message.error(await extractSdkResponseErrorMsg(e))
   }
@@ -300,29 +303,11 @@ async function updateSharedView() {
   return true
 }
 
-const updateSharedViewWithDebounce = useDebounceFn(
-  async () => {
-    await updateSharedView()
-  },
-  250,
-  { maxWait: 2000 },
-)
-
 async function savePreFilledMode() {
   await updateSharedView()
 }
 
-const isOpenCustomUrlLocal = ref(false)
-
-const isOpenCustomUrl = computed(() => {
-  return !!activeView.value?.custom_url_path || isOpenCustomUrlLocal.value
-})
-
-const customUrlInputRef = ref()
-
-const customUrl = ref()
-
-const dashboardUrl1 = computed(() => {
+const dashboardBaseUrl = computed(() => {
   // get base url for workspace
   const baseUrl = getBaseUrl(workspaceStore.activeWorkspaceId)
 
@@ -333,59 +318,13 @@ const dashboardUrl1 = computed(() => {
   return dashboardUrl.value
 })
 
-const copyCustomUrl = () => {
-  copy(
-    `${dashboardUrl1.value}#/p/${customUrl.value}${
+const copyCustomUrl = async (custUrl = '') => {
+  return await copy(
+    `${dashboardBaseUrl.value}#/p/${encodeURIComponent(custUrl || activeView.value?.custom_url_path || '')}${
       preFillFormSearchParams.value && activeView.value?.type === ViewTypes.FORM ? `?${preFillFormSearchParams.value}` : ''
     }`,
   )
 }
-
-const toggleCustomUrl = async () => {
-  isOpenCustomUrlLocal.value = !isOpenCustomUrl.value
-  if (!activeView.value) return
-  if (isUpdating.value.customUrl) return
-
-  isUpdating.value.customUrl = true
-  try {
-    if (isOpenCustomUrl.value) {
-      customUrl.value = null
-    } else {
-      customUrl.value = null
-    }
-    await updateSharedView()
-  } finally {
-    isUpdating.value.customUrl = false
-
-    if (isOpenCustomUrl.value) {
-      customUrlInputRef.value?.focus()
-    }
-  }
-}
-
-const isCustomUrlAvailable = ref(true)
-
-const checkAvailability = async () => {
-  try {
-    const res = await $api.customUrl.checkAvailability({ id: activeView.value?.fk_custom_url_id!, custom_path: customUrl.value })
-    console.log('res', res)
-  } catch (e: any) {
-    console.error(e)
-    // message.error(await extractSdkResponseErrorMsg(e))
-  }
-}
-
-const checkAvailabilityWithDebounce = useDebounceFn(
-  async () => {
-    await checkAvailability()
-  },
-  250,
-  { maxWait: 2000 },
-)
-
-onMounted(() => {
-  customUrl.value = activeView.value?.custom_url_path
-})
 </script>
 
 <template>
@@ -407,55 +346,14 @@ onMounted(() => {
         <div class="mt-0.5 border-t-1 border-gray-100 pt-3">
           <GeneralCopyUrl v-model:url="url" />
         </div>
-        <div class="flex flex-col justify-between mt-1 py-2 px-3 bg-gray-50 rounded-md">
-          <div class="flex flex-row items-center justify-between">
-            <div class="flex text-black">Custom url</div>
-            <a-switch
-              v-e="['c:share:view:custom-url:toggle']"
-              :checked="isOpenCustomUrl"
-              :loading="isUpdating.customUrl"
-              class="share-custom-url-toggle !mt-0.25"
-              data-testid="share-custom-url-toggle"
-              size="small"
-              @click="toggleCustomUrl"
-            />
-          </div>
-          <Transition mode="out-in" name="layout">
-            <div
-              v-if="isOpenCustomUrl"
-              class="flex items-center mt-2 pl-2 pr-1 w-full border-1 rounded-lg focus-within:(border-1 border-nc-border-brand shadow-selected)"
-            >
-              <div class="text-nc-content-gray-muted">{{ dashboardUrl1 }}#/p/</div>
-              <a-input
-                ref="customUrlInputRef"
-                v-model:value="customUrl"
-                placeholder="Enter custom url"
-                class="!rounded-lg !py-1 h-8"
-                data-testid="nc-modal-share-view__custom-url"
-                size="small"
-                :bordered="false"
-                autocomplete="off"
-                @update:value="checkAvailabilityWithDebounce"
-              />
-              <div>
-                <NcButton
-                  v-if="customUrl && customUrl === activeView?.custom_url_path"
-                  size="xs"
-                  type="secondary"
-                  @click="copyCustomUrl"
-                >
-                  <template #icon>
-                    <MdiContentCopy class="h-3.5" />
-                  </template>
-                  {{ $t('general.copy') }}
-                </NcButton>
-                <NcButton v-else size="xs" :disabled="!customUrl" @click.stop="updateSharedView">
-                  {{ $t('general.save') }}
-                </NcButton>
-              </div>
-            </div>
-          </Transition>
-        </div>
+
+        <DlgShareAndCollaborateCustomUrl
+          v-if="activeView"
+          v-model:view="activeView"
+          :dashboard-url="dashboardBaseUrl"
+          :copy-custom-url="copyCustomUrl"
+          @update-shared-view="updateSharedView"
+        />
         <div class="flex flex-col justify-between mt-1 py-2 px-3 bg-gray-50 rounded-md">
           <div class="flex flex-row items-center justify-between">
             <div class="flex text-black">{{ $t('activity.restrictAccessWithPassword') }}</div>
