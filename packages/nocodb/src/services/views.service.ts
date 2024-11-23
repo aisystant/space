@@ -9,8 +9,13 @@ import type { NcContext, NcRequest } from '~/interface/config';
 import { AppHooksService } from '~/services/app-hooks/app-hooks.service';
 import { validatePayload } from '~/helpers';
 import { NcError } from '~/helpers/catchError';
-import { BaseUser, Model, ModelRoleVisibility, View } from '~/models';
-import CustomUrl from '~/models/CustomUrl';
+import {
+  BaseUser,
+  Model,
+  ModelRoleVisibility,
+  View,
+  CustomUrl,
+} from '~/models';
 
 // todo: move
 async function xcVisibilityMetaGet(

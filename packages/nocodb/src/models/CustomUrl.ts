@@ -60,7 +60,10 @@ export default class CustomUrl implements CustomUrlType {
   static async delete(
     _customUrl: Pick<CustomUrl, 'id' | 'view_id'>,
     _ncMeta = Noco.ncMeta,
-  ): Promise<any> {
-    return;
-  }
+  ): Promise<any> {}
+
+  static async bulkDelete(
+    _params: Pick<CustomUrl, 'fk_workspace_id' | 'base_id' | 'fk_model_id'>,
+    _ncMeta = Noco.ncMeta,
+  ): Promise<any> {}
 }
