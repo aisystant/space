@@ -27,7 +27,7 @@ import {
 import NocoCache from '~/cache/NocoCache';
 import Noco from '~/Noco';
 import { BaseModelSqlv2 } from '~/db/BaseModelSqlv2';
-import { CustomUrl, FileReference } from '~/models';
+import { FileReference } from '~/models';
 import { cleanCommandPaletteCache } from '~/helpers/commandPaletteHelpers';
 import {
   parseMetaProp,
@@ -644,10 +644,6 @@ export default class Model implements TableType {
       `${CacheScope.MODEL_ALIAS}:${this.base_id}:${this.title}`,
       `${CacheScope.MODEL_ALIAS}:${this.base_id}:${this.source_id}:${this.title}`,
     ]);
-
-    CustomUrl.bulkDelete({ fk_model_id: this.id }, ncMeta).catch(() => {
-      logger.error(`Failed to delete custom urls of modelId: ${this.id}`);
-    });
 
     cleanCommandPaletteCache(context.workspace_id).catch(() => {
       logger.error('Failed to clean command palette cache');

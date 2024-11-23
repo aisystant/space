@@ -1415,12 +1415,14 @@ export default class View implements ViewType {
       }
     }
 
-    if (view.fk_custom_url_id) {
-      await CustomUrl.delete({ id: view.fk_custom_url_id });
-    }
-
     // on update, delete any optimised single query cache
     await View.clearSingleQueryCache(context, view.fk_model_id, [view], ncMeta);
+
+    if (view.fk_custom_url_id) {
+      CustomUrl.delete({ id: view.fk_custom_url_id }).catch(() => {
+        logger.error(`Failed to delete custom urls of viewId: ${view.id}`);
+      });
+    }
 
     cleanCommandPaletteCache(context.workspace_id).catch(() => {
       logger.error('Failed to clean command palette cache');

@@ -307,6 +307,10 @@ export default class Base implements BaseType {
       CacheDelDirection.CHILD_TO_PARENT,
     );
 
+    CustomUrl.bulkDelete({ base_id: baseId }, ncMeta).catch(() => {
+      logger.error(`Failed to delete custom urls of baseId: ${baseId}`);
+    });
+
     cleanCommandPaletteCache(context.workspace_id).catch(() => {
       logger.error('Failed to clean command palette cache');
     });
