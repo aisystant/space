@@ -1,4 +1,4 @@
-import { CustomUrlType } from 'nocodb-sdk';
+import type { CustomUrlType } from 'nocodb-sdk';
 import Noco from '~/Noco';
 
 export default class CustomUrl implements CustomUrlType {

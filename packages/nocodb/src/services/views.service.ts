@@ -11,10 +11,10 @@ import { validatePayload } from '~/helpers';
 import { NcError } from '~/helpers/catchError';
 import {
   BaseUser,
+  CustomUrl,
   Model,
   ModelRoleVisibility,
   View,
-  CustomUrl,
 } from '~/models';
 
 // todo: move

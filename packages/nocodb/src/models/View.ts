@@ -39,7 +39,7 @@ import {
   prepareForResponse,
   stringifyMetaProp,
 } from '~/utils/modelUtils';
-import { LinkToAnotherRecordColumn, CustomUrl } from '~/models';
+import { CustomUrl, LinkToAnotherRecordColumn } from '~/models';
 import { cleanCommandPaletteCache } from '~/helpers/commandPaletteHelpers';
 
 const { v4: uuidv4 } = require('uuid');
