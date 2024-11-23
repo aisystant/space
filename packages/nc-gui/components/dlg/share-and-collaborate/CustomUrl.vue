@@ -6,7 +6,7 @@ interface Props {
   dashboardUrl: string
 }
 
-const emits = defineEmits(['updateSharedView', 'copyCustomUrl'])
+defineProps<Props>()
 </script>
 
 <template>

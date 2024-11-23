@@ -54,10 +54,6 @@ const url = computed(() => {
   return sharedViewUrl() ?? ''
 })
 
-const preFillFormSearchParams = computed(() => {
-  return viewStore.preFillFormSearchParams && formPreFill.value.preFillEnabled ? viewStore.preFillFormSearchParams : ''
-})
-
 const passwordProtectedLocal = ref(false)
 
 const passwordProtected = computed(() => {
@@ -69,7 +65,10 @@ const password = computed({
   set: async (value) => {
     if (!activeView.value) return
 
-    activeView.value = { ...(activeView.value as any), password: passwordProtected.value ? value : null }
+    activeView.value = {
+      ...(activeView.value as any),
+      password: passwordProtected.value ? value : null,
+    }
 
     updateSharedView()
   },
@@ -177,6 +176,10 @@ const formPreFill = computed({
     }
     savePreFilledMode()
   },
+})
+
+const preFillFormSearchParams = computed(() => {
+  return viewStore.preFillFormSearchParams && formPreFill.value.preFillEnabled ? viewStore.preFillFormSearchParams : ''
 })
 
 const handleChangeFormPreFill = (value: { preFillEnabled?: boolean; preFilledMode?: PreFilledMode }) => {
@@ -330,7 +333,9 @@ const copyCustomUrl = async (custUrl = '') => {
   <div class="flex flex-col py-2 px-3 mb-1">
     <div class="flex flex-col w-full mt-2.5 px-3 py-2.5 border-gray-200 border-1 rounded-md gap-y-2">
       <div class="flex flex-row w-full justify-between py-0.5">
-        <div class="text-gray-900 font-medium">{{ $t('activity.enabledPublicViewing') }}</div>
+        <div class="text-gray-900 font-medium">
+          {{ $t('activity.enabledPublicViewing') }}
+        </div>
         <a-switch
           v-e="['c:share:view:enable:toggle']"
           :checked="isPublicShared"
@@ -355,7 +360,9 @@ const copyCustomUrl = async (custUrl = '') => {
         />
         <div class="flex flex-col justify-between mt-1 py-2 px-3 bg-gray-50 rounded-md">
           <div class="flex flex-row items-center justify-between">
-            <div class="flex text-black">{{ $t('activity.restrictAccessWithPassword') }}</div>
+            <div class="flex text-black">
+              {{ $t('activity.restrictAccessWithPassword') }}
+            </div>
             <a-switch
               v-e="['c:share:view:password:toggle']"
               :checked="passwordProtected"
