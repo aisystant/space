@@ -19,10 +19,26 @@ const up = async (knex: Knex) => {
 
     table.timestamps(true, true);
   });
+
+  await knex.schema.alterTable(MetaTable.PROJECT, (table) => {
+    table.string('fk_custom_url_id', 20).index();
+  });
+
+  await knex.schema.alterTable(MetaTable.VIEWS, (table) => {
+    table.string('fk_custom_url_id', 20).index();
+  });
 };
 
 const down = async (knex: Knex) => {
   await knex.schema.dropTable(MetaTable.CUSTOM_URLS);
+
+  await knex.schema.alterTable(MetaTable.PROJECT, (table) => {
+    table.dropColumn('fk_custom_url_id');
+  });
+
+  await knex.schema.alterTable(MetaTable.VIEWS, (table) => {
+    table.dropColumn('fk_custom_url_id');
+  });
 };
 
 export { up, down };
