@@ -16,8 +16,6 @@ import { AppHooksService } from '~/services/app-hooks/app-hooks.service';
 import { TelemetryService } from '~/services/telemetry.service';
 import { AppHooksListenerService } from '~/services/app-hooks-listener.service';
 import { HookHandlerService } from '~/services/hook-handler.service';
-import { CustomUrlsController } from '~/controllers/custom-urls.controller';
-import { CustomUrlsService } from '~/services/custom-urls.service';
 
 /* User */
 import { UsersController } from '~/controllers/users/users.controller';
@@ -147,8 +145,6 @@ export const nocoModuleMetadata = {
   controllers: [
     ...(process.env.NC_WORKER_CONTAINER !== 'true'
       ? [
-          CustomUrlsController,
-
           /* Users */
           UsersController,
 
@@ -219,7 +215,6 @@ export const nocoModuleMetadata = {
     AppHooksListenerService,
     TelemetryService,
     HookHandlerService,
-    CustomUrlsService,
 
     /* Users */
     UsersService,
@@ -282,7 +277,6 @@ export const nocoModuleMetadata = {
     TelemetryService,
     HookHandlerService,
     JwtStrategy,
-    CustomUrlsService,
 
     /* Users */
     UsersService,
