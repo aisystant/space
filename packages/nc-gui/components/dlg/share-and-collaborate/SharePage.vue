@@ -286,15 +286,14 @@ async function updateSharedView(custUrl = undefined) {
     if (!activeView.value?.meta) return
     const meta = activeView.value.meta
 
-    await $api.dbViewShare.update(activeView.value.id!, {
+    const res = await $api.dbViewShare.update(activeView.value.id!, {
       meta,
       password: activeView.value.password,
-      ...(custUrl !== undefined ? { custom_url_path: custUrl ?? null } : {}),
-      original_url: sharedViewUrl(false),
+      ...(custUrl !== undefined ? { custom_url_path: custUrl ?? null, original_url: sharedViewUrl(false) } : {}),
     })
 
     if (custUrl !== undefined) {
-      activeView.value.custom_url_path = custUrl ?? null
+      activeView.value.fk_custom_url_id = res.fk_custom_url_id
     }
   } catch (e: any) {
     message.error(await extractSdkResponseErrorMsg(e))
@@ -320,7 +319,7 @@ const dashboardBaseUrl = computed(() => {
 
 const copyCustomUrl = async (custUrl = '') => {
   return await copy(
-    `${dashboardBaseUrl.value}#/p/${encodeURIComponent(custUrl || activeView.value?.custom_url_path || '')}${
+    `${dashboardBaseUrl.value}#/p/${encodeURIComponent(custUrl)}${
       preFillFormSearchParams.value && activeView.value?.type === ViewTypes.FORM ? `?${preFillFormSearchParams.value}` : ''
     }`,
   )
@@ -349,7 +348,7 @@ const copyCustomUrl = async (custUrl = '') => {
 
         <DlgShareAndCollaborateCustomUrl
           v-if="activeView"
-          v-model:view="activeView"
+          :id="activeView.fk_custom_url_id"
           :dashboard-url="dashboardBaseUrl"
           :copy-custom-url="copyCustomUrl"
           @update-shared-view="updateSharedView"
