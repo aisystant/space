@@ -107,70 +107,6 @@ const togglePasswordProtected = async () => {
   }
 }
 
-const isOpenCustomUrlLocal = ref(false)
-
-const isOpenCustomUrl = computed(() => {
-  return !!activeView.value?.custom_url_path || isOpenCustomUrlLocal.value
-})
-
-const customUrlInputRef = ref()
-
-const customUrl = ref()
-
-// const customUrl = computed({
-//   get: () => (isOpenCustomUrl.value ? activeView.value?.custom_url_path ?? '' : ''),
-//   set: async (value) => {
-//     if (!activeView.value) return
-
-//     activeView.value = { ...(activeView.value as any), custom_url_path: isOpenCustomUrl.value ? value : null }
-//   },
-// })
-
-const dashboardUrl1 = computed(() => {
-  // get base url for workspace
-  const baseUrl = getBaseUrl(workspaceStore.activeWorkspaceId)
-
-  if (baseUrl) {
-    return `${baseUrl}${appInfo.value?.dashboardPath}`
-  }
-
-  return dashboardUrl.value
-})
-
-const copyCustomUrl = () => {
-  copy(
-    `${dashboardUrl1.value}#/p/${customUrl.value}${
-      preFillFormSearchParams.value && activeView.value?.type === ViewTypes.FORM ? `?${preFillFormSearchParams.value}` : ''
-    }`,
-  )
-}
-
-onMounted(() => {
-  customUrl.value = activeView.value?.custom_url_path
-})
-
-const toggleCustomUrl = async () => {
-  isOpenCustomUrlLocal.value = !isOpenCustomUrl.value
-  if (!activeView.value) return
-  if (isUpdating.value.customUrl) return
-
-  isUpdating.value.customUrl = true
-  try {
-    if (isOpenCustomUrl.value) {
-      customUrl.value = null
-    } else {
-      customUrl.value = null
-    }
-    await updateSharedView()
-  } finally {
-    isUpdating.value.customUrl = false
-
-    if (isOpenCustomUrl.value) {
-      customUrlInputRef.value?.focus()
-    }
-  }
-}
-
 const withRTL = computed({
   get: () => {
     if (!activeView.value?.meta) return false
@@ -375,6 +311,81 @@ const updateSharedViewWithDebounce = useDebounceFn(
 async function savePreFilledMode() {
   await updateSharedView()
 }
+
+const isOpenCustomUrlLocal = ref(false)
+
+const isOpenCustomUrl = computed(() => {
+  return !!activeView.value?.custom_url_path || isOpenCustomUrlLocal.value
+})
+
+const customUrlInputRef = ref()
+
+const customUrl = ref()
+
+const dashboardUrl1 = computed(() => {
+  // get base url for workspace
+  const baseUrl = getBaseUrl(workspaceStore.activeWorkspaceId)
+
+  if (baseUrl) {
+    return `${baseUrl}${appInfo.value?.dashboardPath}`
+  }
+
+  return dashboardUrl.value
+})
+
+const copyCustomUrl = () => {
+  copy(
+    `${dashboardUrl1.value}#/p/${customUrl.value}${
+      preFillFormSearchParams.value && activeView.value?.type === ViewTypes.FORM ? `?${preFillFormSearchParams.value}` : ''
+    }`,
+  )
+}
+
+const toggleCustomUrl = async () => {
+  isOpenCustomUrlLocal.value = !isOpenCustomUrl.value
+  if (!activeView.value) return
+  if (isUpdating.value.customUrl) return
+
+  isUpdating.value.customUrl = true
+  try {
+    if (isOpenCustomUrl.value) {
+      customUrl.value = null
+    } else {
+      customUrl.value = null
+    }
+    await updateSharedView()
+  } finally {
+    isUpdating.value.customUrl = false
+
+    if (isOpenCustomUrl.value) {
+      customUrlInputRef.value?.focus()
+    }
+  }
+}
+
+const isCustomUrlAvailable = ref(true)
+
+const checkAvailability = async () => {
+  try {
+    const res = await $api.customUrl.checkAvailability({ id: activeView.value?.fk_custom_url_id!, custom_path: customUrl.value })
+    console.log('res', res)
+  } catch (e: any) {
+    console.error(e)
+    // message.error(await extractSdkResponseErrorMsg(e))
+  }
+}
+
+const checkAvailabilityWithDebounce = useDebounceFn(
+  async () => {
+    await checkAvailability()
+  },
+  250,
+  { maxWait: 2000 },
+)
+
+onMounted(() => {
+  customUrl.value = activeView.value?.custom_url_path
+})
 </script>
 
 <template>
@@ -424,6 +435,7 @@ async function savePreFilledMode() {
                 size="small"
                 :bordered="false"
                 autocomplete="off"
+                @update:value="checkAvailabilityWithDebounce"
               />
               <div>
                 <NcButton
