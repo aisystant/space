@@ -38,7 +38,6 @@ export default class Base implements BaseType {
   uuid?: string;
   password?: string;
   roles?: string;
-  fk_custom_url_id?: string;
 
   constructor(base: Partial<Base>) {
     Object.assign(this, base);
