@@ -27397,6 +27397,40 @@
       "ButtonActions": {
         "type": "string",
         "enum": ["webhook", "url", "ai"]
+      },
+      "CustomUrl": {
+        "description": "Model for Custom Url",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Id associated to the Custom url"
+          },
+          "fk_workspace_id": {
+            "type": "string",
+            "description": "Workspace ID"
+          },
+          "base_id": {
+            "type": "string",
+            "description": "Base ID"
+          },
+          "fk_model_id": {
+            "type": "string",
+            "description": "Model ID"
+          },
+          "view_id": {
+            "type": "string",
+            "description": "View ID"
+          },
+          "original_path": {
+            "type": "string",
+            "description": "Original url used for redirection purpose"
+          },
+          "custom_path": {
+            "type": "string",
+            "description": "Custom url path"
+          }
+        }
       }
     },
     "responses": {
