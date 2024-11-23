@@ -278,38 +278,45 @@ export class ViewsService {
       NcError.viewNotFound(param.viewId);
     }
 
-    let customUrl: CustomUrl | undefined;
+    let customUrl: CustomUrl | undefined = await CustomUrl.get({
+      view_id: view.id,
+      id: view.fk_custom_url_id,
+    });
 
-    if (param.sharedView.custom_url_path !== undefined) {
-      customUrl = await CustomUrl.get({
-        view_id: view.id,
-        id: view.fk_custom_url_id,
-      });
+    // Update an existing custom URL if it exists
+    if (customUrl?.id) {
+      if (param.sharedView.custom_url_path || param.sharedView.original_url) {
+        // Prepare updated fields conditionally
+        const updates: Partial<CustomUrl> = {};
 
-      if (customUrl?.id) {
-        if (param.sharedView.custom_url_path) {
-          await CustomUrl.update(view.fk_custom_url_id, {
-            custom_path: param.sharedView.custom_url_path,
-            ...(customUrl.original_path !== param.sharedView.original_url
-              ? {
-                  original_path: param.sharedView.original_url,
-                }
-              : {}),
-          });
-        } else {
-          await CustomUrl.delete({ id: view.fk_custom_url_id as string });
-          customUrl = undefined;
+        if (param.sharedView.custom_url_path !== undefined) {
+          updates.custom_path = param.sharedView.custom_url_path;
         }
-      } else if (param.sharedView.custom_url_path) {
-        customUrl = await CustomUrl.insert({
-          fk_workspace_id: view.fk_workspace_id,
-          base_id: view.base_id,
-          fk_model_id: view.fk_model_id,
-          view_id: view.id,
-          original_path: param.sharedView.original_url,
-          custom_path: param.sharedView.custom_url_path,
-        });
+
+        if (customUrl.original_path !== param.sharedView.original_url) {
+          updates.original_path = param.sharedView.original_url;
+        }
+
+        // Perform the update if there are changes
+        if (Object.keys(updates).length > 0) {
+          await CustomUrl.update(view.fk_custom_url_id, updates);
+        }
+      } else if (param.sharedView.custom_url_path !== undefined) {
+        // Delete the custom URL if only the custom path is undefined
+        await CustomUrl.delete({ id: view.fk_custom_url_id as string });
+        customUrl = undefined;
       }
+    } else if (param.sharedView.custom_url_path) {
+      // Insert a new custom URL if it doesn't exist
+
+      customUrl = await CustomUrl.insert({
+        fk_workspace_id: view.fk_workspace_id,
+        base_id: view.base_id,
+        fk_model_id: view.fk_model_id,
+        view_id: view.id,
+        original_path: param.sharedView.original_url,
+        custom_path: param.sharedView.custom_url_path,
+      });
     }
 
     const result = await View.update(context, param.viewId, {
