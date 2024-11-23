@@ -109,6 +109,8 @@ const isOpenCustomUrl = computed(() => {
   return !!activeView.value?.custom_url_path || isOpenCustomUrlLocal.value
 })
 
+const customUrlInputRef = ref()
+
 const customUrl = ref()
 
 // const customUrl = computed({
@@ -151,10 +153,13 @@ const toggleCustomUrl = async () => {
     } else {
       customUrl.value = null
     }
-
     await updateSharedView()
   } finally {
     isUpdating.value.customUrl = false
+
+    if (isOpenCustomUrl.value) {
+      customUrlInputRef.value?.focus()
+    }
   }
 }
 
@@ -402,6 +407,7 @@ async function savePreFilledMode() {
             >
               <div class="text-nc-content-gray-muted">{{ dashboardUrl1 }}#/shared/</div>
               <a-input
+                ref="customUrlInputRef"
                 v-model:value="customUrl"
                 placeholder="Enter custom url"
                 class="!rounded-lg !py-1 h-8"
