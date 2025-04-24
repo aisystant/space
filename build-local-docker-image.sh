@@ -8,6 +8,9 @@
 #   3b. copy nc-gui build to nocodb dir
 # 4. Build nocodb
 
+source "$HOME/.bashrc"
+
+
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 LOG_FILE=${SCRIPT_DIR}/build-local-docker-image.log
 ERROR=""
