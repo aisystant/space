@@ -1,10 +1,10 @@
 import { promisify } from 'util';
 import { Injectable, Optional } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
-import { Strategy } from 'passport-google-oauth20';
+import { Strategy } from 'passport-openidconnect';
 import bcrypt from 'bcryptjs';
 import type { Request } from 'express';
-import type { VerifyCallback } from 'passport-google-oauth20';
+import type { VerifyCallback } from 'passport-openidconnect';
 import type { FactoryProvider } from '@nestjs/common/interfaces/modules/provider.interface';
 import type { NcRequest } from '~/interface/config';
 import Noco from '~/Noco';
@@ -23,41 +23,43 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
 
   async validate(
     req: NcRequest,
-    accessToken: string,
-    refreshToken: string,
+    issuer: string,
     profile: any,
     done: VerifyCallback,
   ): Promise<any> {
-    // mostly copied from older code
-    const email = profile.emails[0].value;
+    const email =
+      profile.emails?.[0]?.value ||
+      profile.email ||
+      profile.preferred_username;
+
+    if (!email) {
+      return done(new Error('No email found in OIDC profile'), null);
+    }
+
     try {
       const user = await User.getByEmail(email);
       if (user) {
-        // if base id defined extract base level roles
         if (req.ncBaseId) {
           BaseUser.get(req.context, req.ncBaseId, user.id)
             .then(async (baseUser) => {
               user.roles = baseUser?.roles || user.roles;
-              // + (user.roles ? `,${user.roles}` : '');
-
               done(null, sanitiseUserObj(user));
             })
             .catch((e) => done(e));
         } else {
           return done(null, sanitiseUserObj(user));
         }
-        // if user not found create new user if allowed
-        // or return error
       } else {
         const salt = await promisify(bcrypt.genSalt)(10);
-        const user = await this.usersService.registerNewUserIfAllowed({
+        const newUser = await this.usersService.registerNewUserIfAllowed({
           email_verification_token: null,
-          email: profile.emails[0].value,
+          email,
           password: '',
           salt,
           req,
         } as any);
-        return done(null, sanitiseUserObj(user));
+
+        return done(null, sanitiseUserObj(newUser));
       }
     } catch (err) {
       return done(err);
@@ -98,7 +100,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       clientSecret: process.env.NC_GOOGLE_CLIENT_SECRET ?? '',
       callbackURL: req.ncSiteUrl + Noco.getConfig().dashboardPath,
       passReqToCallback: true,
-      scope: ['profile', 'email'],
+      scope: ['openid', 'profile', 'email'],
       state: req.query.state,
     });
   }
@@ -108,16 +110,17 @@ export const GoogleStrategyProvider: FactoryProvider = {
   provide: GoogleStrategy,
   inject: [UsersService],
   useFactory: async (usersService: UsersService) => {
-    // read client id and secret from env variables
-    // if not found provide dummy values to avoid error
-    // it will be handled in authenticate method ( reading from plugin )
     const clientConfig = {
       clientID: process.env.NC_GOOGLE_CLIENT_ID ?? 'dummy-id',
       clientSecret: process.env.NC_GOOGLE_CLIENT_SECRET ?? 'dummy-secret',
-      // todo: update url
-      callbackURL: 'http://localhost:8080/dahsboard',
+      callbackURL: process.env.NC_PUBLIC_URL + '/dashboard/',
       passReqToCallback: true,
-      scope: ['profile', 'email'],
+      scope: ['openid', 'profile', 'email'],
+      issuer: process.env.NC_GOOGLE_ISSUER,
+      authorizationURL: process.env.NC_GOOGLE_ISSUER + '/oauth2/auth',
+      tokenURL: process.env.NC_GOOGLE_ISSUER + '/oauth2/token',
+      userInfoURL: process.env.NC_GOOGLE_ISSUER + '/userinfo',
+      state: true,
     };
 
     return new GoogleStrategy(clientConfig, usersService);

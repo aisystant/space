@@ -21,6 +21,8 @@ import { isEE, T } from '~/utils';
 import { getAppUrl } from '~/utils/appUrl';
 import { DataReflection, Integration } from '~/models';
 import { getRedisURL } from '~/helpers/redisHelpers';
+import session from 'express-session';
+import passport from 'passport';
 
 dotenv.config();
 declare const module: any;
@@ -142,6 +144,20 @@ export default class Noco {
     nestApp.useWebSocketAdapter(new IoAdapter(httpServer));
     NcDebug.log('Websocket adapter initialized');
 
+    nestApp.use(
+      session({
+        secret: process.env.SESSION_SECRET || 'default-session-secret',
+        resave: false,
+        saveUninitialized: false,
+        cookie: {
+          secure: false, // true, for HTTPS
+          maxAge: 24 * 60 * 60 * 1000,
+        },
+      }),
+    );
+    nestApp.use(passport.initialize());
+    nestApp.use(passport.session());
+    
     await nestApp.init();
     NcDebug.log('Nest app initialized');
 
